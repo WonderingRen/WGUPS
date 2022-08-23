@@ -1,0 +1,145 @@
+mport csv
+import datetime
+
+
+class HashTable:
+    def __init__(self, capacity=40):
+        self.table = []
+        for i in range(capacity):
+            self.table.append([])
+
+    # O(1) Insert new item into hash table
+    def insert(self, package):
+        # get destination bucket list
+        bucket = hash(package.package_id) % len(self.table)
+        bucket_list = self.table[bucket]
+        # insert item at tail of bucket list
+        bucket_list.append(package)
+
+    # O(n)
+    def lookup(self, package_id):
+        bucket_index = hash(package_id) % len(self.table)
+        bucket_list = self.table[bucket_index]
+        for pkg in bucket_list:
+            if int(pkg.id) == package_id:
+                return pkg
+
+
+class Package:
+    def __init__(self, package_id, address, city, state, zip, deadline, weight, special_instructions):
+        self.id = package_id
+        self.address = address
+        self.city = city
+        self.state = state
+        self.zip = zip
+        self.deadline = deadline
+        self.weight = weight
+        self.special_instruction = special_instructions
+        self.timeOutForDelivery = None
+        self.time_delivered = None
+        self.truck = None
+        self.mileage = 0
+
+    def __str__(self):
+        return f'{self.id}\t {self.address}\t {self.city}\t {self.state}\t {self.zip}\t {self.deadline}\t {self.weight}\t {self.special_instruction}\t'  # TODO
+
+    def is_delivered(self):
+        return self.time_delivered is not None
+
+    def is_not_delivered(self):
+        return not self.is_delivered()
+
+
+# establish hashmap instance (live object)
+hashMap = HashTable()
+# from csv file
+address_list = []
+# from csv file
+distance_list = []
+
+with open('Addresses.csv') as csv_file:
+    reader = csv.reader(csv_file, delimiter=',')
+    for row in reader:
+        address_list.append(row)
+
+with open('Distance.csv') as csv_file:
+    reader = csv.reader(csv_file, delimiter=',')
+    for row in reader:
+        distance_list.append(row)
+
+with open('Package.csv') as csv_file:
+    reader = csv.reader(csv_file, delimiter=',')
+    # loop through csv
+    for row in reader:
+        package_id = row[0]
+        address = row[1]
+        city = row[2]
+        state = row[3]
+        zip = row[4]
+        deadline = row[5]
+        weight = row[6]
+        special_instructions = row[7]
+        pkg = Package(package_id, address, city, state, zip, deadline, weight, special_instructions)
+        hashMap.insert(pkg)
+
+
+    def get_hash_map():
+        return hashMap
+    # convert to package obj
+
+
+class Truck:
+    def __init__(self, truck_id, package_list, start_time=None):
+        self.truck_id = truck_id
+        self.package_list = package_list
+        self.start_time = start_time
+        self.speed = 18
+
+    def has_more_packages_to_deliver(self):
+        for packageId in self.package_list:
+            package = hashMap.lookup(packageId)
+            if package.is_not_delivered():
+                return True
+        return False
+
+
+Truck1 = Truck(1, [2, 3], datetime.datetime(2022, 1, 1, 8, 0, 0))
+Truck2 = Truck(2, [4, 5, 6], datetime.datetime(2022, 1, 1, 9, 5, 0))
+Truck3 = Truck(1, [7, 8, 9])
+for package_id in Truck1.packages:
+    print(package_id)
+print(input("What's your favorite color?"))
+
+
+# given search address, loop through list to find position
+def get_index_for_address(search_address):
+    index = 0
+    for address in address_list:
+        if address[1] == search_address:
+            return index
+        index += 1
+    return -1
+
+
+def get_dist_between_addresses(start, end):
+    start_index = get_index_for_address(start)
+    end_index = get_index_for_address(end)
+    if end_index > start_index:
+        distance = float(distance_list[end_index][start_index])
+    else:
+        distance = float(distance_list[start_index][end_index])  # flip references to account for larger end_index
+    return distance
+
+
+# Nearest neighbor routine
+def deliver_packages(truck):
+    while truck.has_more_packages_to_deliver():
+        for packageId in truck.package_list:
+            package = hashMap.lookup(packageId)
+            if package.is_not_delivered():
+                # TODO check to see if this is minimum distance
+                get_dist_between_addresses(1, 2)
+
+            # TODO mark min distance pkg as delivered
+            # ??
+            package.is_delivered()
